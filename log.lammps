@@ -1,0 +1,262 @@
+LAMMPS (24 Dec 2020)
+OMP_NUM_THREADS environment is not set. Defaulting to 1 thread. (src/comm.cpp:94)
+  using 1 OpenMP thread(s) per MPI task
+timer off #Select the level of detail at which LAMMPS performs its CPU timings.
+New timer settings: style=off  mode=nosync  timeout=off
+
+units       real #This command sets the style of units used for a simulation.
+boundary    p p p #Set the style of boundaries for the global simulation box in each dimension.p is periodic.
+atom_style      full
+
+
+bond_style      harmonic
+angle_style     harmonic
+read_data dd.dat
+Reading data file ...
+  triclinic box = (0.15616164 -0.019894586 0.011664001) to (26.388638 24.248095 24.423136) with tilt (2.6793175 -1.2997938 0.68796279)
+  1 by 1 by 1 MPI processor grid
+  reading atoms ...
+  1176 atoms
+  scanning bonds ...
+  2 = max bonds/atom
+  scanning angles ...
+  1 = max angles/atom
+  reading bonds ...
+  208 bonds
+  reading angles ...
+  72 angles
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        0        0       
+  special bond factors coul:  0        0        0       
+     2 = max # of 1-2 neighbors
+     1 = max # of 1-3 neighbors
+     1 = max # of 1-4 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.004 seconds
+  read_data CPU = 0.021 seconds
+
+region reg1 block INF INF  INF INF  12.5 INF
+region reg2 block INF INF  INF INF  INF  12.5
+
+group sub1 region reg1
+575 atoms in group sub1
+group sub2 region reg2
+601 atoms in group sub2
+
+neighbor        2.0 bin
+neigh_modify    every 10 check yes
+special_bonds lj/coul 0 0 0 angle yes #Set weighting coefficients for pairwise energy and force contributions between pairs of atoms that are also permanently bonded to each other, either directly or via one or two intermediate bonds.
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        0        0       
+  special bond factors coul:  0        0        0       
+     2 = max # of 1-2 neighbors
+     1 = max # of 1-3 neighbors
+     1 = max # of 1-4 neighbors
+  144 = # of 1-3 neighbors before angle trim
+  144 = # of 1-3 neighbors after angle trim
+     2 = max # of special neighbors
+  special bonds CPU = 0.006 seconds
+
+thermo 100 #Compute and print thermodynamic info (e.g. temperature, energy, pressure) on timesteps that are a multiple of N and at the beginning and end of a simulation. A value of 0 will only print thermodynamics at the beginning and end.
+thermo_style custom step pe temp pxx pyy pzz lx ly lz xy xz yz # step = timestep, pe = total potential energy, temp = temperature, pxx,pyy,pzz,pxy,pxz,pyz = 6 components of pressure tensor, lx,ly,lz = box lengths in x,y,z, xy,xz,yz = box tilt for triclinic (non-orthogonal) simulation boxes
+
+
+pair_style lj/cut/coul/long 12 #LJ with long-range Coulomb potential; Set the formula(s) LAMMPS uses to compute pairwise interactions. In LAMMPS, pair potentials are defined between pairs of atoms that are within a cutoff distance and the set of active interactions typically changes over time.
+kspace_style ewald 1e-6 #ewald value = accuracy (desired relative error in forces(force = Kcal/mole-Angstrom in real units style)
+
+pair_coeff * *  0 0
+pair_coeff 2   8  8.69E-04 4.365403719
+pair_coeff 2   7  7.06E-04 5.452300155
+pair_coeff 2   9  8.69E-04 4.365403719
+pair_coeff 3   8  1.46E-03 4.365403719
+pair_coeff 3   7  1.04E-03 4.445584604
+pair_coeff 3   9  1.04E-03 4.445584604
+pair_coeff 1   8  5.60E-04 3.269598296
+pair_coeff 1   7  5.95E-04 3.260689308
+pair_coeff 1   9  5.95E-04 3.260689308
+pair_coeff 8   8  1.24E+00 2.735059065
+pair_coeff 7   7  6.18E-02 3.447778039
+pair_coeff 9   9  6.18E-02 3.447778039
+pair_coeff 7   8  4.54E-02 3.625957783
+pair_coeff 8   9  4.54E-02 3.625957783
+pair_coeff 7   9  6.18E-02 3.447778039
+pair_coeff 2   4  8.76E-04 4.365403719
+pair_coeff 3   4  6.04E-04 4.472311565
+pair_coeff 4   8  5.26E-03 4.240677898
+pair_coeff 4   7  8.72E-01 2.895420834
+pair_coeff 4   9  8.72E-01 2.895420834
+pair_coeff 4   4  1.54E-01 3.162690449
+pair_coeff 1   4  5.30E-04 3.233784167
+
+
+fix bx all box/relax tri 0.0 # Set a fix that will be applied to a group of atoms. In LAMMPS, a “fix” is any operation that is applied to the system during timestepping or minimization.
+# minimize etol ftol maxiter maxeval
+minimize 1.0e-8 1.0e-8 10000 10000 #Perform an energy minimization of the system, by iteratively adjusting atom coordinates. Iterations are terminated when one of the stopping criteria is satisfied.
+WARNING: Using 'neigh_modify every 1 delay 0 check yes' setting during minimization (src/min.cpp:188)
+Ewald initialization ...
+  using 12-bit tables for long-range coulomb (src/kspace.cpp:339)
+  G vector (1/distance) = 0.2923606
+  estimated absolute RMS force accuracy = 0.00041687872
+  estimated relative force accuracy = 1.2554179e-06
+  KSpace vectors: actual max1d max3d = 1313 9 3429
+                  kxmax kymax kzmax  = 9 8 8
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 14
+  ghost atom cutoff = 14
+  binsize = 7, bins = 5 4 4
+  1 neighbor lists, perpetual/occasional/extra = 1 0 0
+  (1) pair lj/cut/coul/long, perpetual
+      attributes: half, newton on
+      pair build: half/bin/newton/tri
+      stencil: half/bin/3d/newton/tri
+      bin: standard
+WARNING: Inconsistent image flags (src/domain.cpp:812)
+Per MPI rank memory allocation (min/avg/max) = 25.32 | 25.32 | 25.32 Mbytes
+Step PotEng Temp Pxx Pyy Pzz Lx Ly Lz Xy Xz Yz 
+       0   -193656.18            0    1477.5127   -852.23067    1190.0427    26.232477    24.267989    24.411472    2.6793175   -1.2997938   0.68796279 
+     100   -193871.54            0   -143.54206   -128.63653   -124.43851    26.220733      24.2282    24.413744    2.5699574   -1.3426311   0.72852408 
+     200   -194043.96            0    144.84149    126.16925    128.64406    26.200706    24.207289    24.401039    2.5612923   -1.3340221   0.73682151 
+     300   -194143.93            0    137.83354    120.04208    121.64547    26.191384    24.194867     24.39355    2.5539439   -1.3296109   0.74181487 
+     400   -194225.13            0    219.39733    192.52866     193.6892    26.184119    24.184115    24.386471     2.548034   -1.3266774   0.74581304 
+     500   -194271.25            0   -371.86784   -329.45903   -329.73034    26.184119    24.181334    24.385424     2.544728   -1.3251813   0.74787257 
+     600   -194305.23            0     27.25278    23.423861    23.816324    26.178873    24.175159    24.380228    2.5436821   -1.3242196   0.74938223 
+     700   -194374.14            0   -268.27051   -237.16013   -238.31943    26.174542    24.168626    24.374872    2.5423045   -1.3221447   0.75213404 
+     800   -194396.18            0   -392.20007   -346.52658   -348.43864    26.173071    24.166979    24.373235    2.5427291   -1.3215568   0.75286208 
+     900   -194417.97            0     133.1897    117.02366    117.98947    26.167411    24.162159    24.368286    2.5441072   -1.3210619   0.75365119 
+    1000   -194434.53            0    165.22409    146.01085    146.91614    26.165257    24.160407    24.366421    2.5450271   -1.3206698   0.75421497 
+    1100   -194449.88            0    55.482414    48.464661    48.558961    26.164006     24.15955    24.365459    2.5459263    -1.320312   0.75473532 
+    1200   -194463.87            0    152.43671    134.86007    135.75122    26.161566    24.157803    24.363622    2.5470796   -1.3200225   0.75525274 
+    1300   -194477.63            0    150.82458    142.85873    157.15738     26.15977    24.156565    24.362159    2.5482126   -1.3197241   0.75577917 
+    1400   -194489.88            0    154.69787    136.94297    137.93806    26.157885    24.155566    24.361367    2.5494216   -1.3194934   0.75628161 
+    1500   -194502.77            0    108.90628     100.6002    76.710139    26.156199    24.154633    24.360893    2.5507362   -1.3192465   0.75685733 
+    1600   -194514.58            0    151.40137    134.12661     135.1476    26.154161     24.15358    24.359654    2.5520629   -1.3189978   0.75742501 
+    1700    -194527.1            0    252.57674     229.3254    229.04883    26.151585    24.152035    24.358418    2.5536384   -1.3187447   0.75810057 
+    1800   -194540.22            0    131.07152    126.65179    139.55353    26.150285     24.15165    24.358251    2.5551463   -1.3184349   0.75884843 
+    1900   -194554.44            0    196.19446    177.09878    183.63686    26.147491    24.150333    24.357591    2.5571425   -1.3181159    0.7597617 
+    2000   -194572.54            0    189.66561     180.3294    201.98943    26.144662    24.149067    24.356984    2.5596541    -1.317647   0.76102469 
+    2100   -194601.67            0     26.40608    108.84508    246.48252     26.14172    24.147662    24.355483    2.5635792   -1.3167606   0.76321784 
+    2200   -194615.52            0   -220.61991   -207.72498   -251.76413    26.140169    24.148625    24.359551    2.5661237   -1.3166439   0.76419871 
+    2300   -194623.18            0    310.23764    323.98045    249.99596    26.136092    24.144884    24.356527    2.5671636   -1.3161255   0.76464702 
+    2330   -194625.77            0    142.25237    69.367658   -20.779855    26.136159    24.146609    24.358402    2.5688775   -1.3169336   0.76498094 
+
+Minimization stats:
+  Stopping criterion = energy tolerance
+  Energy initial, next-to-last, final = 
+     -193656.180187411  -194625.768377839  -194625.769391393
+  Force two-norm initial, final = 1550.5049 68.451856
+  Force max component initial, final = 952.27863 32.009555
+  Final line search alpha, max atom move = 3.0447909e-07 9.7462400e-06
+  Iterations, force evaluations = 2330 2341
+
+Nlocal:        1176.00 ave        1176 max        1176 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        10061.0 ave       10061 max       10061 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:        510937.0 ave      510937 max      510937 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 510937
+Ave neighs/atom = 434.47024
+Ave special neighs/atom = 0.47619048
+Neighbor list builds = 0
+Dangerous builds = 0
+minimize 1.0e-8 1.0e-8 10000 10000
+WARNING: Using 'neigh_modify every 1 delay 0 check yes' setting during minimization (src/min.cpp:188)
+Ewald initialization ...
+  using 12-bit tables for long-range coulomb (src/kspace.cpp:339)
+  G vector (1/distance) = 0.29242513
+  estimated absolute RMS force accuracy = 0.00040684257
+  estimated relative force accuracy = 1.2251943e-06
+  KSpace vectors: actual max1d max3d = 1312 9 3429
+                  kxmax kymax kzmax  = 9 8 8
+WARNING: Inconsistent image flags (src/domain.cpp:812)
+Per MPI rank memory allocation (min/avg/max) = 25.32 | 25.32 | 25.32 Mbytes
+Step PotEng Temp Pxx Pyy Pzz Lx Ly Lz Xy Xz Yz 
+    2330   -194625.77            0    142.25967    69.378463   -20.771241    26.136159    24.146609    24.358402    2.5688775   -1.3169336   0.76498094 
+    2388   -194629.04            0   -23.393595    38.463052    129.24767    26.137969    24.146715    24.356017     2.568606   -1.3185642   0.76588569 
+
+Minimization stats:
+  Stopping criterion = energy tolerance
+  Energy initial, next-to-last, final = 
+     -194625.769531249   -194629.04024921  -194629.041616868
+  Force two-norm initial, final = 68.367211 65.663619
+  Force max component initial, final = 31.893663 28.978595
+  Final line search alpha, max atom move = 3.4118572e-07 9.8870828e-06
+  Iterations, force evaluations = 58 65
+
+Nlocal:        1176.00 ave        1176 max        1176 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        10139.0 ave       10139 max       10139 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:        516389.0 ave      516389 max      516389 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 516389
+Ave neighs/atom = 439.10629
+Ave special neighs/atom = 0.47619048
+Neighbor list builds = 0
+Dangerous builds = 0
+unfix bx
+
+velocity all create 300.0 76012 dist gaussian mom yes rot yes # Set or change the velocities of a group of atoms in one of several styles.
+velocity	sub2 set 300.0 0.0 0.0 sum yes
+
+dump 10 all xyz 1000 movie_npt.xyz
+dump_modify 10 element Si Ca Cw Ow Hw H Ob O Oh
+fix 2 all print 2000 "$(step) $(pe) $(temp) $(pxx) $(pyy) $(pzz) $(lx) $(ly) $(lz) $(xy) $(xz) $(yz) $(density) $(vol)" title " " file npt_out screen no
+
+fix 1 all npt temp 300.0 300.0 100.0 tri 1 1 1000
+timestep	0.0025
+run 1500
+Ewald initialization ...
+  using 12-bit tables for long-range coulomb (src/kspace.cpp:339)
+  G vector (1/distance) = 0.29242528
+  estimated absolute RMS force accuracy = 0.00040668799
+  estimated relative force accuracy = 1.2247288e-06
+  KSpace vectors: actual max1d max3d = 1312 9 3429
+                  kxmax kymax kzmax  = 9 8 8
+WARNING: Inconsistent image flags (src/domain.cpp:812)
+Per MPI rank memory allocation (min/avg/max) = 24.21 | 24.21 | 24.21 Mbytes
+Step PotEng Temp Pxx Pyy Pzz Lx Ly Lz Xy Xz Yz 
+    2388   -194629.04 3.4845157e+11 1.0887609e+13    3253.8286    3116.0722    26.137969    24.146715    24.356017     2.568606   -1.3185642   0.76588569 
+    2400    26752.022    2251.7849    4529200.7    3229290.2    3024356.2    28.055454    24.147204     24.35651    2.7570416    -1.415296   0.76589978 
+    2500    10668.227    8.4370961      4044874    2930301.6    2801747.6    28.333396    24.147446    24.356746    2.7844962   -1.4294016   0.76584589 
+    2600    5351.1251    7.7044588      3914651      2856981    2741496.9    28.333991    24.147736    24.357026    2.7847853   -1.4295685   0.76575533 
+    2700    472.18433    7.0791469      3795787    2789578.3    2685578.5    28.334576      24.1481    24.357379    2.7851292   -1.4297666   0.76564419 
+    2800   -4032.7066    6.5395778    3686575.3    2727205.9      2633394    28.335246    24.148521    24.357787    2.7855226   -1.4299915   0.76551861 
+    2900   -8212.4989    6.0697396    3585717.8    2669208.9    2584497.8    28.335985    24.148987    24.358242    2.7859549   -1.4302369   0.76538225 
+    3000   -12107.472     5.657293    3492149.5    2615047.4    2538517.8    28.336781    24.149493    24.358736    2.7864189   -1.4304984    0.7652376 
+    3100   -15751.085    5.2925938    3404988.8    2564272.5    2495140.6    28.337625    24.150032    24.359263    2.7869094   -1.4307729   0.76508647 
+    3200   -19171.391    4.9680072    3323498.5    2516507.9    2454100.8     28.33851      24.1506    24.359821    2.7874222    -1.431058   0.76493022 
+    3300   -22392.107    4.6774176    3247057.5      2471435    2415170.9    28.339431    24.151194    24.360406    2.7879542   -1.4313519    0.7647699 
+    3400   -25433.451    4.4158737    3175137.8    2428782.5    2378155.4    28.340382    24.151811    24.361015    2.7885029   -1.4316529   0.76460633 
+    3500   -28312.778    4.1793274    3107287.5    2388317.2    2342884.5    28.341362     24.15245    24.361645     2.789066   -1.4319599    0.7644402 
+    3600   -31045.106    3.9644394    3043117.1    2349837.7    2309209.9    28.342366    24.153108    24.362296    2.7896419   -1.4322719   0.76427205 
+    3700   -33643.484    3.7684319    2982288.6    2313168.6    2277001.7    28.343392    24.153783    24.362965     2.790229   -1.4325881   0.76410232 
+    3800   -36119.341    3.5889768    2924507.3    2278156.7    2246145.1    28.344438    24.154474    24.363651     2.790826   -1.4329077   0.76393141 
+    3888   -38204.753    3.4431808    2875974.2    2248609.6      2220028    28.345374    24.155094    24.364268    2.7913587   -1.4331913   0.76378028 
+
+Nlocal:        1176.00 ave        1176 max        1176 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        9798.00 ave        9798 max        9798 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:        482938.0 ave      482938 max      482938 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 482938
+Ave neighs/atom = 410.66156
+Ave special neighs/atom = 0.47619048
+Neighbor list builds = 1
+Dangerous builds = 1
+write_restart done_npt.res
+System init for write_restart ...
+Ewald initialization ...
+  using 12-bit tables for long-range coulomb (src/kspace.cpp:339)
+  G vector (1/distance) = 0.29193946
+  estimated absolute RMS force accuracy = 0.00040018013
+  estimated relative force accuracy = 1.2051306e-06
+  KSpace vectors: actual max1d max3d = 1530 10 4630
+                  kxmax kymax kzmax  = 10 8 8
+Total wall time: 0:01:12

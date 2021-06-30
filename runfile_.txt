@@ -1,0 +1,70 @@
+timer off #Select the level of detail at which LAMMPS performs its CPU timings.
+
+units       real #This command sets the style of units used for a simulation.
+boundary    p p p #Set the style of boundaries for the global simulation box in each dimension.p is periodic.
+atom_style      full
+
+
+bond_style      harmonic
+angle_style     harmonic
+read_data dd.dat
+
+region reg1 block INF INF  INF INF  12.5 INF
+region reg2 block INF INF  INF INF  INF  12.5
+
+group sub1 region reg1
+group sub2 region reg2
+
+neighbor        2.0 bin
+neigh_modify    every 10 check yes
+special_bonds lj/coul 0 0 0 angle yes #Set weighting coefficients for pairwise energy and force contributions between pairs of atoms that are also permanently bonded to each other, either directly or via one or two intermediate bonds.
+
+thermo 100 #Compute and print thermodynamic info (e.g. temperature, energy, pressure) on timesteps that are a multiple of N and at the beginning and end of a simulation. A value of 0 will only print thermodynamics at the beginning and end.
+thermo_style custom step pe temp pxx pyy pzz lx ly lz xy xz yz # step = timestep, pe = total potential energy, temp = temperature, pxx,pyy,pzz,pxy,pxz,pyz = 6 components of pressure tensor, lx,ly,lz = box lengths in x,y,z, xy,xz,yz = box tilt for triclinic (non-orthogonal) simulation boxes
+
+
+pair_style lj/cut/coul/long 12 #LJ with long-range Coulomb potential; Set the formula(s) LAMMPS uses to compute pairwise interactions. In LAMMPS, pair potentials are defined between pairs of atoms that are within a cutoff distance and the set of active interactions typically changes over time.
+kspace_style ewald 1e-6 #ewald value = accuracy (desired relative error in forces(force = Kcal/mole-Angstrom in real units style)
+
+pair_coeff * *  0 0
+pair_coeff 2   8  8.69E-04 4.365403719
+pair_coeff 2   7  7.06E-04 5.452300155
+pair_coeff 2   9  8.69E-04 4.365403719
+pair_coeff 3   8  1.46E-03 4.365403719
+pair_coeff 3   7  1.04E-03 4.445584604
+pair_coeff 3   9  1.04E-03 4.445584604
+pair_coeff 1   8  5.60E-04 3.269598296
+pair_coeff 1   7  5.95E-04 3.260689308
+pair_coeff 1   9  5.95E-04 3.260689308
+pair_coeff 8   8  1.24E+00 2.735059065
+pair_coeff 7   7  6.18E-02 3.447778039
+pair_coeff 9   9  6.18E-02 3.447778039
+pair_coeff 7   8  4.54E-02 3.625957783
+pair_coeff 8   9  4.54E-02 3.625957783
+pair_coeff 7   9  6.18E-02 3.447778039
+pair_coeff 2   4  8.76E-04 4.365403719
+pair_coeff 3   4  6.04E-04 4.472311565
+pair_coeff 4   8  5.26E-03 4.240677898
+pair_coeff 4   7  8.72E-01 2.895420834
+pair_coeff 4   9  8.72E-01 2.895420834
+pair_coeff 4   4  1.54E-01 3.162690449
+pair_coeff 1   4  5.30E-04 3.233784167
+
+
+fix bx all box/relax tri 0.0 # Set a fix that will be applied to a group of atoms. In LAMMPS, a “fix” is any operation that is applied to the system during timestepping or minimization. 
+# minimize etol ftol maxiter maxeval
+minimize 1.0e-8 1.0e-8 10000 10000 #Perform an energy minimization of the system, by iteratively adjusting atom coordinates. Iterations are terminated when one of the stopping criteria is satisfied.
+minimize 1.0e-8 1.0e-8 10000 10000
+unfix bx
+
+velocity all create 300.0 76012 dist gaussian mom yes rot yes # Set or change the velocities of a group of atoms in one of several styles.
+velocity	sub2 set 300.0 0.0 0.0 sum yes
+
+dump 10 all xyz 1000 movie_npt.xyz
+dump_modify 10 element Si Ca Cw Ow Hw H Ob O Oh
+fix 2 all print 2000 "$(step) $(pe) $(temp) $(pxx) $(pyy) $(pzz) $(lx) $(ly) $(lz) $(xy) $(xz) $(yz) $(density) $(vol)" title " " file npt_out screen no
+
+fix 1 all npt temp 300.0 300.0 100.0 tri 1 1 1000
+timestep	0.0025
+run 1500
+write_restart done_npt.res

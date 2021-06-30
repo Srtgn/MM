@@ -1,0 +1,61 @@
+timer off
+
+units       real
+boundary    p p p
+atom_style      full
+
+
+bond_style      harmonic
+angle_style     harmonic
+read_data ddd.dat
+
+neighbor        2.0 bin
+neigh_modify    every 10 check yes
+special_bonds lj/coul 0 0 0 angle yes
+
+thermo 100
+thermo_style custom step pe temp pxx pyy pzz lx ly lz xy xz yz
+
+
+pair_style lj/cut/coul/long 12
+kspace_style ewald 1e-6
+pair_coeff * *  0 0
+pair_coeff 2   8  8.69E-04 4.365403719
+pair_coeff 2   7  7.06E-04 5.452300155
+pair_coeff 2   9  8.69E-04 4.365403719
+pair_coeff 3   8  1.46E-03 4.365403719
+pair_coeff 3   7  1.04E-03 4.445584604
+pair_coeff 3   9  1.04E-03 4.445584604
+pair_coeff 1   8  5.60E-04 3.269598296
+pair_coeff 1   7  5.95E-04 3.260689308
+pair_coeff 1   9  5.95E-04 3.260689308
+pair_coeff 8   8  1.24E+00 2.735059065
+pair_coeff 7   7  6.18E-02 3.447778039
+pair_coeff 9   9  6.18E-02 3.447778039
+pair_coeff 7   8  4.54E-02 3.625957783
+pair_coeff 8   9  4.54E-02 3.625957783
+pair_coeff 7   9  6.18E-02 3.447778039
+pair_coeff 2   4  8.76E-04 4.365403719
+pair_coeff 3   4  6.04E-04 4.472311565
+pair_coeff 4   8  5.26E-03 4.240677898
+pair_coeff 4   7  8.72E-01 2.895420834
+pair_coeff 4   9  8.72E-01 2.895420834
+pair_coeff 4   4  1.54E-01 3.162690449
+pair_coeff 1   4  5.30E-04 3.233784167
+
+
+fix bx all box/relax tri 0.0
+minimize 1.0e-8 1.0e-8 10000 100000
+minimize 1.0e-8 1.0e-8 10000 100000
+unfix bx
+
+velocity all create 300.0 76012 dist gaussian mom yes rot yes
+
+dump 10 all xyz 100000 movie_npt.xyz
+dump_modify 10 element Si Ca Cw Ow Hw H Ob O Oh
+fix 2 all print 20000 "$(step) $(pe) $(temp) $(pxx) $(pyy) $(pzz) $(lx) $(ly) $(lz) $(xy) $(xz) $(yz) $(density) $(vol)" title " " file npt_out screen no
+
+fix 1 all npt temp 300.0 300.0 100.0 tri 1 1 1000
+
+run 1500000
+write_restart done_npt.res
